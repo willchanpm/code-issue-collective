@@ -1,8 +1,10 @@
 import { PhotoCapture } from '@/components/PhotoCapture'
+import { SiteNav } from '@/components/SiteNav'
 
 export default function HomePage() {
   return (
     <main className="page">
+      <SiteNav />
       <header className="hero">
         <p className="eyebrow">Polaroid-powered pet simulator</p>
         <h1>Tamagotcha</h1>

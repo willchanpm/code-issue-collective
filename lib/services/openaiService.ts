@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import type { AvatarMood, GeneratedAvatar, PhotoAnalysis } from '@/lib/types'
 import { buildAvatarPrompt, getAvatarMood } from '@/lib/services/avatarMoods'
+import { clampVoiceStability, normalizeFalVoice, VOICE_SELECTION_PROMPT } from '@/lib/services/voiceProfiles'
 import { config } from '@/lib/config'
 
 function getOpenAIClient(): OpenAI {
@@ -18,6 +19,8 @@ Return JSON with these keys only:
 - personality
 - nameSuggestion
 - narration
+- voice
+- voiceStability
 
 The description is the important field for this endpoint. Write 2-4 concise sentences that describe only visible details from the image:
 - visible skin colour or complexion
@@ -30,7 +33,7 @@ If a required detail is unclear or not visible, say that it is not clearly visib
 For the other fields, keep them short and derived from the same visible appearance:
 - personality: 1 playful sentence about the tamagotchi personality they should have
 - nameSuggestion: a cute pet name inspired by the photo
-- narration: 1-2 spoken sentences describing the person directly to them`
+${VOICE_SELECTION_PROMPT}`
 
 export async function analyzePhotoWithOpenAI(
   imageBase64: string,
@@ -65,6 +68,8 @@ export async function analyzePhotoWithOpenAI(
 
   return {
     ...parsed,
+    voice: normalizeFalVoice(parsed.voice),
+    voiceStability: clampVoiceStability(parsed.voiceStability),
     provider: 'openai',
   }
 }

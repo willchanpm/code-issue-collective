@@ -1,7 +1,7 @@
 import { getErrorMessage, jsonError } from '@/lib/api-utils'
 import {
   createFriendId,
-  getFriendRecord,
+  listFriendSummaries,
   saveFriendRecord,
 } from '@/lib/friendStore'
 import type { FriendRecord } from '@/lib/types'
@@ -34,18 +34,11 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET(request: Request) {
-  const id = new URL(request.url).searchParams.get('id')
-
-  if (!id) {
-    return jsonError('Missing id query parameter', 400)
+export async function GET() {
+  try {
+    const friends = await listFriendSummaries()
+    return Response.json({ friends })
+  } catch (error) {
+    return jsonError(getErrorMessage(error, 'Failed to load friends'))
   }
-
-  const record = await getFriendRecord(id)
-
-  if (!record) {
-    return jsonError('Friend not found', 404)
-  }
-
-  return Response.json({ friend: record })
 }

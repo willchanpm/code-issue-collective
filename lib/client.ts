@@ -2,6 +2,7 @@ import type {
   AnalyzePhotoResponse,
   AudioResponse,
   FriendRecord,
+  FriendSummary,
   GenerateAvatarResponse,
   SaveFriendResponse,
   TamagotchaPipelineResult,
@@ -60,11 +61,18 @@ export async function generateAvatar(
   return parseJson<GenerateAvatarResponse>(response)
 }
 
-export async function generateVoice(text: string): Promise<AudioResponse> {
+export async function generateVoice(
+  text: string,
+  options?: { voice?: string; stability?: number },
+): Promise<AudioResponse> {
   const response = await fetch('/api/generate-voice', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({
+      text,
+      voice: options?.voice,
+      stability: options?.stability,
+    }),
   })
 
   return parseJson<AudioResponse>(response)
@@ -108,6 +116,12 @@ export async function loadFriend(id: string): Promise<FriendRecord> {
   return payload.friend
 }
 
+export async function loadAllFriends(): Promise<FriendSummary[]> {
+  const response = await fetch('/api/friends')
+  const payload = await parseJson<{ friends: FriendSummary[] }>(response)
+  return payload.friends
+}
+
 export function audioBase64ToUrl(audio: AudioResponse): string {
   return `data:${audio.mimeType};base64,${audio.audioBase64}`
 }
@@ -140,7 +154,10 @@ export async function processPhotoSerial(
 
   try {
     setStage('voice', 'active')
-    narrationAudio = await generateVoice(analysis.narration)
+    narrationAudio = await generateVoice(analysis.narration, {
+      voice: analysis.voice,
+      stability: analysis.voiceStability,
+    })
     setStage('voice', 'done')
 
     setStage('music', 'active')

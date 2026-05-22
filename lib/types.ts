@@ -10,6 +10,10 @@ export interface PhotoAnalysis {
   personality: string
   nameSuggestion: string
   narration: string
+  // FAL / ElevenLabs voice name chosen to match the avatar vibe.
+  voice: string
+  // How steady vs expressive the spoken intro should be (0-1).
+  voiceStability: number
   provider: AiProvider
 }
 
@@ -57,6 +61,17 @@ export interface FriendRecord extends TamagotchaPipelineResult {
 export interface SaveFriendResponse {
   id: string
   sharePath: string
+}
+
+// Lightweight version for the "all my friends" gallery (no audio blobs).
+export interface FriendSummary {
+  id: string
+  name: string
+  createdAt: string
+  idleAvatar: {
+    imageBase64: string
+    mimeType: string
+  }
 }
 
 export type FriendViewState = 'idle' | 'pint' | 'dance'

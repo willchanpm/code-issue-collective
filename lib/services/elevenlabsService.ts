@@ -6,6 +6,10 @@ import {
   usesFalForAudio,
 } from '@/lib/config'
 import * as falAudioService from '@/lib/services/falAudioService'
+import {
+  getElevenLabsVoiceId,
+  type NarrationVoiceOptions,
+} from '@/lib/services/voiceProfiles'
 
 const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1'
 
@@ -39,9 +43,12 @@ function toAudioResponse(buffer: ArrayBuffer, mimeType: string): AudioResponse {
   }
 }
 
-async function generateNarrationVoiceDirect(text: string): Promise<AudioResponse> {
+async function generateNarrationVoiceDirect(
+  text: string,
+  options?: Partial<NarrationVoiceOptions>,
+): Promise<AudioResponse> {
   const buffer = await elevenLabsRequest(
-    `/text-to-speech/${config.elevenLabsVoiceId}`,
+    `/text-to-speech/${getElevenLabsVoiceId(options?.voice, config.elevenLabsVoiceId)}`,
     {
       text,
       model_id: 'eleven_multilingual_v2',
@@ -71,12 +78,15 @@ async function generatePetMusicDirect(mood: string): Promise<AudioResponse> {
   return toAudioResponse(buffer, 'audio/mpeg')
 }
 
-export async function generateNarrationVoice(text: string): Promise<AudioResponse> {
+export async function generateNarrationVoice(
+  text: string,
+  options?: Partial<NarrationVoiceOptions>,
+): Promise<AudioResponse> {
   assertAudioConfigured()
   if (usesFalForAudio()) {
-    return falAudioService.generateNarrationVoice(text)
+    return falAudioService.generateNarrationVoice(text, options)
   }
-  return generateNarrationVoiceDirect(text)
+  return generateNarrationVoiceDirect(text, options)
 }
 
 export async function generatePetSound(prompt: string): Promise<AudioResponse> {

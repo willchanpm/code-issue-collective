@@ -318,6 +318,11 @@ export function PhotoCapture() {
                   alt="QR code linking to the friend page"
                 />
               )}
+              <div className="share-actions">
+                <a className="button-link" href="/friends">
+                  See all my friends
+                </a>
+              </div>
             </div>
           </div>
         </div>

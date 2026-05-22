@@ -1,6 +1,11 @@
 import { fal } from '@fal-ai/client'
 import type { AudioResponse } from '@/lib/types'
 import { assertFalConfigured, config } from '@/lib/config'
+import {
+  clampVoiceStability,
+  normalizeFalVoice,
+  type NarrationVoiceOptions,
+} from '@/lib/services/voiceProfiles'
 
 // These model IDs match the Python scripts:
 // - tts.py      → fal-ai/elevenlabs/tts/eleven-v3
@@ -59,10 +64,14 @@ async function generateFalAudio(
   return fetchAudioAsBase64(data.audio.url, data.audio.content_type)
 }
 
-export async function generateNarrationVoice(text: string): Promise<AudioResponse> {
+export async function generateNarrationVoice(
+  text: string,
+  options?: Partial<NarrationVoiceOptions>,
+): Promise<AudioResponse> {
   return generateFalAudio(TTS_MODEL, {
     text,
-    voice: config.falVoice,
+    voice: normalizeFalVoice(options?.voice ?? config.falVoice),
+    stability: clampVoiceStability(options?.stability),
   })
 }
 

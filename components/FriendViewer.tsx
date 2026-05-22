@@ -9,6 +9,7 @@ import {
   getAvatarForMood,
 } from '@/lib/friendUtils'
 import { TamagotchiShell } from '@/components/TamagotchiShell'
+import { SiteNav } from '@/components/SiteNav'
 
 export function FriendViewer({ id }: { id: string }) {
   const [friend, setFriend] = useState<FriendRecord | null>(null)
@@ -55,6 +56,8 @@ export function FriendViewer({ id }: { id: string }) {
 
   return (
     <section className="friend-page">
+      <SiteNav />
+
       <header className="friend-header">
         <p className="eyebrow">Pocket friend</p>
         <h1>{friend.analysis.nameSuggestion}</h1>
