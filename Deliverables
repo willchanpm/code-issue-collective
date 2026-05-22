@@ -1,25 +1,59 @@
 **Deliverables**
 
-1. **Frontend**
+Status key: `[x]` done · `[~]` partial · `[ ]` not started
+
+---
+
+## 1. Frontend
 Mobile QR app with 8-bit character, sound, and buttons:
-- Tap / Message
-- Pint Beer
-- Dance
 
-2. **AI API**
+- [~] Mobile-first web app (Next.js Tamagotcha homepage)
+- [~] Photo capture / upload flow
+- [ ] QR code landing page (scan Polaroid → open friend’s pet)
+- [ ] Single interactive 8-bit character view (not just a results grid)
+- [ ] Tap / Message button
+- [ ] Pint Beer button
+- [ ] Dance button
+
+---
+
+## 2. AI API
 Scan/upload Polaroid, then generate:
-- Image description
-- 8-bit person
-- 8-bit person with pint glass
-- 8-bit person dancing
-- Matching 8-bit sound mood/tempo
 
-3. **Audio**
+- [x] Polaroid scan / upload
+- [x] Image description (vision API describes the person)
+- [x] 8-bit person sprites (8 mood variants via serialized `/api/generate-avatar`)
+- [ ] 8-bit person with pint glass (dedicated sprite + prompt)
+- [ ] 8-bit person dancing (dedicated sprite + prompt)
+- [ ] Matching 8-bit sound mood/tempo per action (idle / pint / dance)
+
+---
+
+## 3. Audio
 Connect ElevenLabs / generated sounds for:
-- Idle
-- Pint Beer
-- Dance
 
-4. **Demo**
+- [x] ElevenLabs API wired (`/api/generate-voice`, `/api/generate-sound`, `/api/generate-music`)
+- [x] Spoken photo description on upload (narration audio)
+- [ ] Idle sound — hooked up to a button / character state
+- [ ] Pint Beer sound — hooked up to Pint Beer button
+- [ ] Dance sound — hooked up to Dance button
+
+---
+
+## 4. Demo
 Polaroid + QR code + short pitch showing:
 Scan → character appears → beer button → dance button → sound plays.
+
+- [ ] Physical Polaroid with QR code on the back
+- [ ] Deployed public URL for the QR code
+- [ ] End-to-end demo flow working on a phone
+- [ ] Short pitch script rehearsed (see `PLAN.md`)
+
+---
+
+## Infrastructure (bonus — already shipped)
+
+- [x] Next.js single-server app (Vercel-ready)
+- [x] Serialized API pipeline (one request at a time for timeouts)
+- [x] OpenAI / Gemini provider switch via env vars
+- [x] `.env.example` + README deploy docs
