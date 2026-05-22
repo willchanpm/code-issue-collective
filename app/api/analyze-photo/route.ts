@@ -14,7 +14,10 @@ export async function POST(request: Request) {
     }
 
     const analysis = await analyzePhoto(photo.imageBase64, photo.mimeType)
-    return Response.json({ analysis })
+    return Response.json({
+      description: analysis.description,
+      analysis,
+    })
   } catch (error) {
     return jsonError(getErrorMessage(error, 'Failed to analyze photo'))
   }
