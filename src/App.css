@@ -1,0 +1,154 @@
+.page {
+  min-height: 100vh;
+  padding: 2.5rem 1.25rem 3rem;
+  background:
+    radial-gradient(circle at top, #ffe8c7 0%, transparent 45%),
+    linear-gradient(180deg, #fff8ef 0%, #f7efe3 100%);
+}
+
+.hero {
+  max-width: 42rem;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a6b4f;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.8rem, 10vw, 4.5rem);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.lede {
+  margin: 1rem auto 0;
+  max-width: 34rem;
+  font-size: 1.05rem;
+  color: #5c4a38;
+}
+
+.polaroid-stage {
+  display: grid;
+  gap: 1.5rem;
+  justify-items: center;
+  align-items: center;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.polaroid {
+  width: min(100%, 18rem);
+  padding: 1rem 1rem 2.5rem;
+  background: #fff;
+  box-shadow:
+    0 18px 40px rgba(47, 36, 24, 0.14),
+    0 2px 0 rgba(255, 255, 255, 0.8) inset;
+  transform: rotate(-4deg);
+}
+
+.polaroid-photo {
+  display: grid;
+  place-items: center;
+  gap: 0.75rem;
+  aspect-ratio: 1 / 1;
+  border: 2px dashed #d8cbb8;
+  background: linear-gradient(180deg, #fffdf8 0%, #f3eadf 100%);
+  color: #7a6753;
+  text-align: center;
+}
+
+.face {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.polaroid-photo p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.polaroid-caption {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-family: 'Courier New', Courier, monospace;
+  color: #4d4032;
+}
+
+.pet-shell {
+  width: 11rem;
+  padding: 1rem;
+  border-radius: 2rem;
+  background: #ffb8d1;
+  border: 3px solid #2f2418;
+  box-shadow: 0 12px 0 #e58fb3;
+}
+
+.pet-screen {
+  display: grid;
+  gap: 0.35rem;
+  place-items: center;
+  min-height: 6.5rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: #dff6ff;
+  border: 2px solid #2f2418;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+}
+
+.pet-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.pet-buttons span {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: #2f2418;
+}
+
+.cta {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
+.cta button {
+  padding: 0.9rem 1.4rem;
+  border: 2px solid #2f2418;
+  border-radius: 999px;
+  background: #8fd3ff;
+  color: #2f2418;
+  font-weight: 700;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.hint {
+  margin: 0.85rem 0 0;
+  color: #7a6753;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 768px) {
+  .polaroid-stage {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .polaroid {
+    justify-self: end;
+  }
+
+  .pet-shell {
+    justify-self: start;
+  }
+}
