@@ -124,7 +124,7 @@ export async function processPhotoSerial(
     actionSounds.pint = await generateSound(ACTION_SOUND_PROMPTS.pint)
     actionSounds.dance = await generateSound(ACTION_SOUND_PROMPTS.dance)
   } catch {
-    // Audio is optional if ElevenLabs is not configured yet.
+    // Audio is optional if FAL_KEY / ELEVENLABS_API_KEY are not configured yet.
   }
 
   const pipeline: TamagotchaPipelineResult = {

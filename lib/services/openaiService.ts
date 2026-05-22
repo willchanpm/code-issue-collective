@@ -63,11 +63,19 @@ export async function generateAvatarWithOpenAI(
 ): Promise<GeneratedAvatar> {
   const { label } = getAvatarMood(mood)
   const openai = getOpenAIClient()
+
+  // Image API (not the old DALL-E API):
+  // https://developers.openai.com/api/docs/guides/image-generation
+  //
+  // GPT Image models always return base64 PNG data in `b64_json`.
+  // Do NOT pass `response_format` — that param only worked on dall-e-2/3
+  // and causes a 400 "Unknown parameter: response_format" error now.
   const image = await openai.images.generate({
-    model: 'dall-e-3',
-    size: '1024x1024',
-    response_format: 'b64_json',
+    model: config.openaiImageModel,
     prompt: buildAvatarPrompt(description, mood, label),
+    size: '1024x1024',
+    quality: 'low',
+    output_format: 'png',
   })
 
   const imageBase64 = image.data?.[0]?.b64_json

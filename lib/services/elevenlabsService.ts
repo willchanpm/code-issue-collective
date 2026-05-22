@@ -1,5 +1,11 @@
 import type { AudioResponse } from '@/lib/types'
-import { assertElevenLabsConfigured, config } from '@/lib/config'
+import {
+  assertAudioConfigured,
+  assertElevenLabsConfigured,
+  config,
+  usesFalForAudio,
+} from '@/lib/config'
+import * as falAudioService from '@/lib/services/falAudioService'
 
 const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1'
 
@@ -33,7 +39,7 @@ function toAudioResponse(buffer: ArrayBuffer, mimeType: string): AudioResponse {
   }
 }
 
-export async function generateNarrationVoice(text: string): Promise<AudioResponse> {
+async function generateNarrationVoiceDirect(text: string): Promise<AudioResponse> {
   const buffer = await elevenLabsRequest(
     `/text-to-speech/${config.elevenLabsVoiceId}`,
     {
@@ -45,7 +51,7 @@ export async function generateNarrationVoice(text: string): Promise<AudioRespons
   return toAudioResponse(buffer, 'audio/mpeg')
 }
 
-export async function generatePetSound(prompt: string): Promise<AudioResponse> {
+async function generatePetSoundDirect(prompt: string): Promise<AudioResponse> {
   const buffer = await elevenLabsRequest('/sound-generation', {
     text: prompt,
     duration_seconds: 2,
@@ -55,7 +61,7 @@ export async function generatePetSound(prompt: string): Promise<AudioResponse> {
   return toAudioResponse(buffer, 'audio/mpeg')
 }
 
-export async function generatePetMusic(mood: string): Promise<AudioResponse> {
+async function generatePetMusicDirect(mood: string): Promise<AudioResponse> {
   const buffer = await elevenLabsRequest('/sound-generation', {
     text: `8-bit tamagotchi background music, cute and nostalgic, ${mood} mood, simple chiptune loop`,
     duration_seconds: 8,
@@ -63,4 +69,28 @@ export async function generatePetMusic(mood: string): Promise<AudioResponse> {
   })
 
   return toAudioResponse(buffer, 'audio/mpeg')
+}
+
+export async function generateNarrationVoice(text: string): Promise<AudioResponse> {
+  assertAudioConfigured()
+  if (usesFalForAudio()) {
+    return falAudioService.generateNarrationVoice(text)
+  }
+  return generateNarrationVoiceDirect(text)
+}
+
+export async function generatePetSound(prompt: string): Promise<AudioResponse> {
+  assertAudioConfigured()
+  if (usesFalForAudio()) {
+    return falAudioService.generatePetSound(prompt)
+  }
+  return generatePetSoundDirect(prompt)
+}
+
+export async function generatePetMusic(mood: string): Promise<AudioResponse> {
+  assertAudioConfigured()
+  if (usesFalForAudio()) {
+    return falAudioService.generatePetMusic(mood)
+  }
+  return generatePetMusicDirect(mood)
 }

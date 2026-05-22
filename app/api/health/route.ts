@@ -8,6 +8,8 @@ export async function GET() {
     aiProvider: config.aiProvider,
     hasOpenAI: Boolean(config.openaiApiKey),
     hasGemini: Boolean(config.geminiApiKey),
+    hasFal: Boolean(config.falKey),
     hasElevenLabs: Boolean(config.elevenLabsApiKey),
+    audioProvider: config.falKey ? 'fal' : config.elevenLabsApiKey ? 'elevenlabs' : null,
   })
 }
