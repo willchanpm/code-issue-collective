@@ -432,14 +432,33 @@ button {
 
 .share-box {
   margin-top: 1.5rem;
+}
+
+.share-box--closed {
+  padding-top: 0;
+  border-top: none;
+}
+
+.share-box--open {
   padding-top: 1rem;
   border-top: 2px dashed #e6d9c7;
 }
 
 .share-box--compact {
   margin-top: 0.75rem;
+}
+
+.share-box--compact.share-box--open {
   padding-top: 0.75rem;
   border-top: 2px dashed rgba(47, 36, 24, 0.2);
+}
+
+.share-panel {
+  margin-top: 0.85rem;
+}
+
+.share-box--compact .share-panel {
+  margin-top: 0.65rem;
 }
 
 .share-box--compact .share-label {
