@@ -14,6 +14,7 @@ import {
   getAvatarForMood,
 } from '@/lib/friendUtils'
 import { PipelineProgress } from '@/components/PipelineProgress'
+import { TamagotchiShell } from '@/components/TamagotchiShell'
 import {
   applyPipelineProgressUpdate,
   createInitialPipelineProgress,
@@ -22,9 +23,23 @@ import {
 
 type PipelineStatus = 'idle' | 'processing' | 'ready' | 'error'
 
+// Laptops/desktops use the webcam; phones keep the native camera file picker.
+function prefersWebcamCapture(): boolean {
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
+    return false
+  }
+
+  const isMobile = window.matchMedia('(max-width: 768px) and (pointer: coarse)').matches
+  return !isMobile
+}
+
 export function PhotoCapture() {
   const inputRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const streamRef = useRef<MediaStream | null>(null)
   const [status, setStatus] = useState<PipelineStatus>('idle')
+  const [showWebcam, setShowWebcam] = useState(false)
+  const [useWebcam, setUseWebcam] = useState(false)
   const [progress, setProgress] = useState<PipelineProgressState>(
     createInitialPipelineProgress,
   )
@@ -33,6 +48,10 @@ export function PhotoCapture() {
   const [shareInfo, setShareInfo] = useState<SaveFriendResponse | null>(null)
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
   const [result, setResult] = useState<FriendRecord | null>(null)
+
+  useEffect(() => {
+    setUseWebcam(prefersWebcamCapture())
+  }, [])
 
   useEffect(() => {
     if (!shareInfo) {
@@ -44,6 +63,108 @@ export function PhotoCapture() {
       width: 220,
     }).then(setQrCodeUrl)
   }, [shareInfo])
+
+  // Turn on the live webcam preview once the modal is visible.
+  useEffect(() => {
+    if (!showWebcam || !videoRef.current || !streamRef.current) {
+      return
+    }
+
+    videoRef.current.srcObject = streamRef.current
+    void videoRef.current.play()
+  }, [showWebcam])
+
+  // Always stop the camera when leaving the page or closing the modal.
+  useEffect(() => {
+    return () => {
+      streamRef.current?.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+  }, [])
+
+  function stopWebcam() {
+    streamRef.current?.getTracks().forEach((track) => track.stop())
+    streamRef.current = null
+    setShowWebcam(false)
+  }
+
+  async function openWebcam() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+        audio: false,
+      })
+
+      streamRef.current = stream
+      setShowWebcam(true)
+      setError(null)
+    } catch {
+      // If the user blocks the camera, fall back to uploading a file instead.
+      inputRef.current?.click()
+    }
+  }
+
+  async function captureFromWebcam() {
+    const video = videoRef.current
+    if (!video || video.videoWidth === 0) {
+      setError('Webcam is not ready yet. Try again in a second.')
+      return
+    }
+
+    // Grab one frame from the live video and turn it into a photo file.
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    const context = canvas.getContext('2d')
+    if (!context) {
+      setError('Could not capture from webcam.')
+      return
+    }
+
+    context.drawImage(video, 0, 0)
+    stopWebcam()
+
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, 'image/jpeg', 0.92)
+    })
+
+    if (!blob) {
+      setError('Could not save the webcam photo.')
+      return
+    }
+
+    const file = new File([blob], `polaroid-${Date.now()}.jpg`, {
+      type: 'image/jpeg',
+    })
+
+    void handlePhotoSelected(file)
+  }
+
+  function handleTakePhotoClick() {
+    if (status === 'processing') {
+      return
+    }
+
+    if (useWebcam) {
+      void openWebcam()
+      return
+    }
+
+    inputRef.current?.click()
+  }
+
+  function handleUploadClick() {
+    if (status === 'processing') {
+      return
+    }
+
+    inputRef.current?.click()
+  }
 
   async function handlePhotoSelected(file: File | undefined) {
     if (!file) {
@@ -90,6 +211,13 @@ export function PhotoCapture() {
 
   return (
     <section className="capture">
+      {/* Empty device before a photo is taken; live device once processing finishes. */}
+      {status !== 'ready' && (
+        <div className="capture-device">
+          <TamagotchiShell empty />
+        </div>
+      )}
+
       <input
         ref={inputRef}
         type="file"
@@ -98,22 +226,61 @@ export function PhotoCapture() {
         hidden
         onChange={(event) => {
           void handlePhotoSelected(event.target.files?.[0])
+          event.target.value = ''
         }}
       />
 
-      <button
-        type="button"
-        disabled={status === 'processing'}
-        onClick={() => inputRef.current?.click()}
-      >
-        {status === 'processing' ? 'Processing photo...' : 'Take polaroid photo'}
-      </button>
+      <div className="capture-actions">
+        <button
+          type="button"
+          disabled={status === 'processing' || showWebcam}
+          onClick={handleTakePhotoClick}
+        >
+          {status === 'processing'
+            ? 'Processing photo...'
+            : useWebcam
+              ? 'Take photo with webcam'
+              : 'Take polaroid photo'}
+        </button>
+
+        {useWebcam && (
+          <button
+            type="button"
+            className="capture-secondary"
+            disabled={status === 'processing' || showWebcam}
+            onClick={handleUploadClick}
+          >
+            Upload photo instead
+          </button>
+        )}
+      </div>
+
+      {showWebcam && (
+        <div className="webcam-capture">
+          <p className="hint">Hold your polaroid up to the webcam, then capture.</p>
+          <video
+            ref={videoRef}
+            className="webcam-video"
+            playsInline
+            muted
+            autoPlay
+          />
+          <div className="webcam-actions">
+            <button type="button" onClick={() => void captureFromWebcam()}>
+              Capture photo
+            </button>
+            <button type="button" className="capture-secondary" onClick={stopWebcam}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {status === 'processing' && <PipelineProgress progress={progress} />}
 
       {error && <p className="error">{error}</p>}
 
-      {previewUrl && (
+      {previewUrl && status !== 'ready' && (
         <div className="capture-preview">
           <img src={previewUrl} alt="Captured polaroid preview" />
         </div>
@@ -121,6 +288,10 @@ export function PhotoCapture() {
 
       {result && shareInfo && (
         <div className="pipeline-result">
+          <div className="capture-device">
+            <FriendPreview friend={result} />
+          </div>
+
           <div className="analysis-card">
             <h2>Meet {result.analysis.nameSuggestion}</h2>
             <p>{result.analysis.description}</p>
@@ -149,8 +320,6 @@ export function PhotoCapture() {
               )}
             </div>
           </div>
-
-          <FriendPreview friend={result} />
         </div>
       )}
     </section>
@@ -175,17 +344,12 @@ function FriendPreview({ friend }: { friend: FriendRecord }) {
 
   return (
     <div className="friend-preview">
-      <h3>Preview interactions</h3>
-      <div className="friend-stage">
-        {currentAvatar && (
-          <img
-            className="friend-sprite"
-            src={avatarToDataUrl(currentAvatar)}
-            alt={`${currentAvatar.label} avatar`}
-          />
-        )}
-        <p className="friend-feedback">{feedback}</p>
-      </div>
+      <TamagotchiShell
+        spriteSrc={currentAvatar ? avatarToDataUrl(currentAvatar) : undefined}
+        spriteAlt={currentAvatar ? `${currentAvatar.label} avatar` : undefined}
+        feedback={feedback}
+        name={friend.analysis.nameSuggestion.toUpperCase()}
+      />
 
       <div className="friend-actions">
         <button

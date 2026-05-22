@@ -12,20 +12,6 @@ export default function HomePage() {
         </p>
       </header>
 
-      <section className="polaroid-stage" aria-label="Polaroid preview">
-        <div className="pet-shell" aria-hidden="true">
-          <div className="pet-screen">
-            <span>HUNGRY</span>
-            <strong>♥ ♥ ♡</strong>
-          </div>
-          <div className="pet-buttons">
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
-      </section>
-
       <PhotoCapture />
     </main>
   )

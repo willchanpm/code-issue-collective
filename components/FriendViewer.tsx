@@ -8,6 +8,7 @@ import {
   avatarToDataUrl,
   getAvatarForMood,
 } from '@/lib/friendUtils'
+import { TamagotchiShell } from '@/components/TamagotchiShell'
 
 export function FriendViewer({ id }: { id: string }) {
   const [friend, setFriend] = useState<FriendRecord | null>(null)
@@ -60,15 +61,13 @@ export function FriendViewer({ id }: { id: string }) {
         <p className="lede">{friend.analysis.personality}</p>
       </header>
 
-      <div className="friend-stage">
-        {currentAvatar && (
-          <img
-            className="friend-sprite"
-            src={avatarToDataUrl(currentAvatar)}
-            alt={`${currentAvatar.label} avatar`}
-          />
-        )}
-        <p className="friend-feedback">{feedback}</p>
+      <div className="capture-device">
+        <TamagotchiShell
+          spriteSrc={currentAvatar ? avatarToDataUrl(currentAvatar) : undefined}
+          spriteAlt={currentAvatar ? `${currentAvatar.label} avatar` : undefined}
+          feedback={feedback}
+          name={friend.analysis.nameSuggestion.toUpperCase()}
+        />
       </div>
 
       <div className="friend-actions">

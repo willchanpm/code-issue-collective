@@ -1,6 +1,10 @@
+import { getErrorMessage } from '@/lib/errorUtils'
+
 export function jsonError(message: string, status = 500): Response {
   return Response.json({ error: message }, { status })
 }
+
+export { getErrorMessage }
 
 export async function readPhotoFromFormData(formData: FormData) {
   const photo = formData.get('photo')
@@ -17,6 +21,3 @@ export async function readPhotoFromFormData(formData: FormData) {
   }
 }
 
-export function getErrorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback
-}

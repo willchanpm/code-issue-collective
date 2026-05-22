@@ -11,12 +11,27 @@ import type {
   PipelineProgressUpdate,
   PipelineStageId,
 } from '@/lib/pipelineProgress'
+import { getErrorMessage } from '@/lib/errorUtils'
 
 async function parseJson<T>(response: Response): Promise<T> {
-  const payload = (await response.json()) as T & { error?: string }
-  if (!response.ok) {
-    throw new Error(payload.error ?? 'Request failed')
+  let payload: T & { error?: unknown; message?: unknown }
+
+  try {
+    payload = (await response.json()) as T & { error?: unknown; message?: unknown }
+  } catch {
+    throw new Error(`Request failed (${response.status} ${response.statusText})`)
   }
+
+  if (!response.ok) {
+    // Vercel and some APIs return { error: { message: "..." } } — not a plain string.
+    throw new Error(
+      getErrorMessage(
+        payload.error ?? payload.message ?? payload,
+        `Request failed (${response.status})`,
+      ),
+    )
+  }
+
   return payload
 }
 
