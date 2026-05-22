@@ -11,5 +11,6 @@ export async function GET() {
     hasFal: Boolean(config.falKey),
     hasElevenLabs: Boolean(config.elevenLabsApiKey),
     audioProvider: config.falKey ? 'fal' : config.elevenLabsApiKey ? 'elevenlabs' : null,
+    hasBlobStorage: Boolean(process.env.BLOB_READ_WRITE_TOKEN),
   })
 }

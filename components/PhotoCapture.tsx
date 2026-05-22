@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import QRCode from 'qrcode'
-import type { FriendViewState, PipelineStep } from '@/lib/types'
+import type { FriendViewState } from '@/lib/types'
 import {
   audioBase64ToUrl,
   processPhotoSerial,
@@ -13,24 +13,21 @@ import {
   buildShareUrl,
   getAvatarForMood,
 } from '@/lib/friendUtils'
+import { PipelineProgress } from '@/components/PipelineProgress'
+import {
+  applyPipelineProgressUpdate,
+  createInitialPipelineProgress,
+  type PipelineProgressState,
+} from '@/lib/pipelineProgress'
 
 type PipelineStatus = 'idle' | 'processing' | 'ready' | 'error'
-
-const STEP_LABELS: Record<PipelineStep, string> = {
-  analyzing: 'Describing your friend...',
-  'generating-avatar': 'Generating 8-bit avatar...',
-  'generating-voice': 'Creating spoken intro...',
-  'generating-music': 'Creating theme music...',
-  'generating-sounds': 'Creating button sounds...',
-  saving: 'Saving your pocket friend...',
-  ready: 'Done!',
-}
 
 export function PhotoCapture() {
   const inputRef = useRef<HTMLInputElement>(null)
   const [status, setStatus] = useState<PipelineStatus>('idle')
-  const [step, setStep] = useState<PipelineStep | null>(null)
-  const [stepDetail, setStepDetail] = useState<string | null>(null)
+  const [progress, setProgress] = useState<PipelineProgressState>(
+    createInitialPipelineProgress,
+  )
   const [error, setError] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [shareInfo, setShareInfo] = useState<SaveFriendResponse | null>(null)
@@ -54,8 +51,7 @@ export function PhotoCapture() {
     }
 
     setStatus('processing')
-    setStep('analyzing')
-    setStepDetail(null)
+    setProgress(createInitialPipelineProgress())
     setError(null)
     setResult(null)
     setShareInfo(null)
@@ -63,9 +59,8 @@ export function PhotoCapture() {
     setPreviewUrl(URL.createObjectURL(file))
 
     try {
-      const { pipeline, friend } = await processPhotoSerial(file, (nextStep, detail) => {
-        setStep(nextStep)
-        setStepDetail(detail ?? null)
+      const { pipeline, friend } = await processPhotoSerial(file, (update) => {
+        setProgress((current) => applyPipelineProgressUpdate(current, update))
       })
 
       setShareInfo(friend)
@@ -114,12 +109,7 @@ export function PhotoCapture() {
         {status === 'processing' ? 'Processing photo...' : 'Take polaroid photo'}
       </button>
 
-      {status === 'processing' && step && (
-        <p className="hint">
-          {STEP_LABELS[step]}
-          {stepDetail ? ` (${stepDetail})` : ''}
-        </p>
-      )}
+      {status === 'processing' && <PipelineProgress progress={progress} />}
 
       {error && <p className="error">{error}</p>}
 

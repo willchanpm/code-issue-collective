@@ -58,13 +58,4 @@ export interface SaveFriendResponse {
   sharePath: string
 }
 
-export type PipelineStep =
-  | 'analyzing'
-  | 'generating-avatar'
-  | 'generating-voice'
-  | 'generating-music'
-  | 'generating-sounds'
-  | 'saving'
-  | 'ready'
-
 export type FriendViewState = 'idle' | 'pint' | 'dance'

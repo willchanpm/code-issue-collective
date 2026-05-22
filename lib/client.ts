@@ -3,11 +3,14 @@ import type {
   AudioResponse,
   FriendRecord,
   GenerateAvatarResponse,
-  PipelineStep,
   SaveFriendResponse,
   TamagotchaPipelineResult,
 } from '@/lib/types'
 import { ACTION_SOUND_PROMPTS, AVATAR_MOODS } from '@/lib/services/avatarMoods'
+import type {
+  PipelineProgressUpdate,
+  PipelineStageId,
+} from '@/lib/pipelineProgress'
 
 async function parseJson<T>(response: Response): Promise<T> {
   const payload = (await response.json()) as T & { error?: string }
@@ -97,16 +100,23 @@ export function audioBase64ToUrl(audio: AudioResponse): string {
 // Runs each backend step one at a time so Vercel functions stay within timeout limits.
 export async function processPhotoSerial(
   file: File,
-  onStep?: (step: PipelineStep, detail?: string) => void,
+  onProgress?: (update: PipelineProgressUpdate) => void,
 ): Promise<{ pipeline: TamagotchaPipelineResult; friend: SaveFriendResponse }> {
-  onStep?.('analyzing')
+  function setStage(stageId: PipelineStageId, status: PipelineProgressUpdate['status']) {
+    onProgress?.({ stageId, status })
+  }
+
+  setStage('analyze', 'active')
   const { analysis } = await analyzePhoto(file)
+  setStage('analyze', 'done')
 
   const avatars = []
   for (const { mood, label } of AVATAR_MOODS) {
-    onStep?.('generating-avatar', label)
+    const stageId = `avatar-${mood}` as PipelineStageId
+    setStage(stageId, 'active')
     const { avatar } = await generateAvatar(analysis.description, mood)
     avatars.push(avatar)
+    setStage(stageId, 'done')
   }
 
   let narrationAudio: AudioResponse | undefined
@@ -114,17 +124,32 @@ export async function processPhotoSerial(
   const actionSounds: TamagotchaPipelineResult['actionSounds'] = {}
 
   try {
-    onStep?.('generating-voice')
+    setStage('voice', 'active')
     narrationAudio = await generateVoice(analysis.narration)
-    onStep?.('generating-music')
-    themeMusic = await generateMusic('happy')
+    setStage('voice', 'done')
 
-    onStep?.('generating-sounds')
+    setStage('music', 'active')
+    themeMusic = await generateMusic('happy')
+    setStage('music', 'done')
+
+    setStage('sound-idle', 'active')
     actionSounds.idle = await generateSound(ACTION_SOUND_PROMPTS.idle)
+    setStage('sound-idle', 'done')
+
+    setStage('sound-pint', 'active')
     actionSounds.pint = await generateSound(ACTION_SOUND_PROMPTS.pint)
+    setStage('sound-pint', 'done')
+
+    setStage('sound-dance', 'active')
     actionSounds.dance = await generateSound(ACTION_SOUND_PROMPTS.dance)
+    setStage('sound-dance', 'done')
   } catch {
     // Audio is optional if FAL_KEY / ELEVENLABS_API_KEY are not configured yet.
+    setStage('voice', narrationAudio ? 'done' : 'skipped')
+    setStage('music', themeMusic ? 'done' : 'skipped')
+    setStage('sound-idle', actionSounds.idle ? 'done' : 'skipped')
+    setStage('sound-pint', actionSounds.pint ? 'done' : 'skipped')
+    setStage('sound-dance', actionSounds.dance ? 'done' : 'skipped')
   }
 
   const pipeline: TamagotchaPipelineResult = {
@@ -135,9 +160,9 @@ export async function processPhotoSerial(
     actionSounds,
   }
 
-  onStep?.('saving')
+  setStage('save', 'active')
   const friend = await saveFriend(pipeline)
+  setStage('save', 'done')
 
-  onStep?.('ready')
   return { pipeline, friend }
 }
