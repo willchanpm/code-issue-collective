@@ -1,4 +1,5 @@
 import './App.css'
+import { PhotoCapture } from './components/PhotoCapture.tsx'
 
 function App() {
   return (
@@ -13,17 +14,6 @@ function App() {
       </header>
 
       <section className="polaroid-stage" aria-label="Polaroid preview">
-        {/* Placeholder frame for the future photo-to-pet flow. */}
-        <div className="polaroid">
-          <div className="polaroid-photo">
-            <span className="face" aria-hidden="true">
-              :)
-            </span>
-            <p>Your friend goes here</p>
-          </div>
-          <p className="polaroid-caption">Bestie loading...</p>
-        </div>
-
         <div className="pet-shell" aria-hidden="true">
           <div className="pet-screen">
             <span>HUNGRY</span>
@@ -37,13 +27,7 @@ function App() {
         </div>
       </section>
 
-      <section className="cta">
-        {/* Disabled for now — camera upload comes in the next step. */}
-        <button type="button" disabled>
-          Take polaroid photo
-        </button>
-        <p className="hint">Camera capture and pet generation coming soon.</p>
-      </section>
+      <PhotoCapture />
     </main>
   )
 }

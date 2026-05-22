@@ -4,6 +4,13 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // Vite config ties together the dev server, React, and PWA behavior.
 export default defineConfig({
+  server: {
+    // Forward API calls to the Express server during local development.
+    proxy: {
+      '/api': 'http://localhost:3001',
+      '/health': 'http://localhost:3001',
+    },
+  },
   plugins: [
     react(),
     VitePWA({
