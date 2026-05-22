@@ -21,6 +21,7 @@ export interface GeneratedAvatar {
 }
 
 export interface AnalyzePhotoResponse {
+  description: string
   analysis: PhotoAnalysis
 }
 

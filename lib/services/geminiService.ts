@@ -11,16 +11,23 @@ function getGeminiClient(): GoogleGenerativeAI {
   return new GoogleGenerativeAI(config.geminiApiKey)
 }
 
-const ANALYSIS_PROMPT = `You are helping turn a polaroid photo of a real person into a playful tamagotchi pet.
+const ANALYSIS_PROMPT = `You are describing a scanned or uploaded Polaroid photo of a person.
 
-Describe the person in the photo for a friend who cannot see the image.
 Return valid JSON only with keys:
 description, personality, nameSuggestion, narration.
 
-- description: 2-3 sentences about appearance and vibe
-- personality: 1 sentence about the tamagotchi personality they should have
+The description is the important field for this endpoint. Write 2-4 concise sentences that describe only visible details from the image:
+- visible skin colour or complexion
+- hair colour and visible hairstyle
+- clothing, including colours and notable items
+- a general description of the person, such as pose, expression, accessories, and overall appearance
+
+If a required detail is unclear or not visible, say that it is not clearly visible. Do not identify the person, guess ethnicity, or infer sensitive traits beyond visible appearance.
+
+For the other fields, keep them short and derived from the same visible appearance:
+- personality: 1 playful sentence about the tamagotchi personality they should have
 - nameSuggestion: a cute pet name inspired by the photo
-- narration: 2 spoken sentences describing the person directly to them`
+- narration: 1-2 spoken sentences describing the person directly to them`
 
 export async function analyzePhotoWithGemini(
   imageBase64: string,

@@ -11,14 +11,26 @@ function getOpenAIClient(): OpenAI {
   return new OpenAI({ apiKey: config.openaiApiKey })
 }
 
-const ANALYSIS_PROMPT = `You are helping turn a polaroid photo of a real person into a playful tamagotchi pet.
+const ANALYSIS_PROMPT = `You are describing a scanned or uploaded Polaroid photo of a person.
 
-Look at the photo and describe the person in a warm, concise way for a friend who cannot see the image.
-Return JSON with:
-- description: 2-3 sentences about appearance and vibe
-- personality: 1 sentence about the tamagotchi personality they should have
+Return JSON with these keys only:
+- description
+- personality
+- nameSuggestion
+- narration
+
+The description is the important field for this endpoint. Write 2-4 concise sentences that describe only visible details from the image:
+- visible skin colour or complexion
+- hair colour and visible hairstyle
+- clothing, including colours and notable items
+- a general description of the person, such as pose, expression, accessories, and overall appearance
+
+If a required detail is unclear or not visible, say that it is not clearly visible. Do not identify the person, guess ethnicity, or infer sensitive traits beyond visible appearance.
+
+For the other fields, keep them short and derived from the same visible appearance:
+- personality: 1 playful sentence about the tamagotchi personality they should have
 - nameSuggestion: a cute pet name inspired by the photo
-- narration: a spoken intro (2 sentences) that describes the person directly to them, like "Hey! I can see your bright smile..."`
+- narration: 1-2 spoken sentences describing the person directly to them`
 
 export async function analyzePhotoWithOpenAI(
   imageBase64: string,
