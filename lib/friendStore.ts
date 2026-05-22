@@ -1,4 +1,4 @@
-import { put, head } from '@vercel/blob'
+import { get, put } from '@vercel/blob'
 import type { FriendRecord } from '@/lib/types'
 
 const globalForFriends = globalThis as typeof globalThis & {
@@ -26,8 +26,9 @@ export async function saveFriendRecord(
   getMemoryStore().set(record.id, record)
 
   if (canUseBlobStorage()) {
+    // Private Blob stores must use access: 'private' (public stores use 'public').
     await put(blobPath(record.id), JSON.stringify(record), {
-      access: 'public',
+      access: 'private',
       contentType: 'application/json',
       addRandomSuffix: false,
       allowOverwrite: true,
@@ -48,14 +49,15 @@ export async function getFriendRecord(id: string): Promise<FriendRecord | null> 
   }
 
   try {
-    const blob = await head(blobPath(id))
-    const response = await fetch(blob.url)
+    // Private blobs can't be fetched via a public URL — use the SDK instead.
+    const result = await get(blobPath(id), { access: 'private' })
 
-    if (!response.ok) {
+    if (!result || result.statusCode !== 200 || !result.stream) {
       return null
     }
 
-    const record = (await response.json()) as FriendRecord
+    const text = await new Response(result.stream).text()
+    const record = JSON.parse(text) as FriendRecord
     getMemoryStore().set(id, record)
     return record
   } catch {
