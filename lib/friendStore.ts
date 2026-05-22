@@ -1,4 +1,4 @@
-import { get, list, put } from '@vercel/blob'
+import { del, get, list, put } from '@vercel/blob'
 import type { FriendRecord, FriendSummary } from '@/lib/types'
 
 const globalForFriends = globalThis as typeof globalThis & {
@@ -217,6 +217,32 @@ export async function listFriendSummaries(): Promise<FriendSummary[]> {
   }
 
   return allSummaries
+}
+
+export async function deleteFriendRecord(id: string): Promise<boolean> {
+  const inIndex = (await getFriendIndex()).some((summary) => summary.id === id)
+  const record =
+    getMemoryStore().get(id) ?? (inIndex ? await getFriendRecord(id) : null)
+
+  if (!record && !inIndex) {
+    return false
+  }
+
+  getMemoryStore().delete(id)
+
+  if (canUseBlobStorage()) {
+    try {
+      await del(blobPath(id))
+    } catch {
+      // File may already be gone — still remove it from the index below.
+    }
+  }
+
+  const next = (await getFriendIndex()).filter((summary) => summary.id !== id)
+  globalForFriends.friendIndex = next
+  await saveFriendIndexToBlob(next)
+
+  return true
 }
 
 export function createFriendId(): string {
