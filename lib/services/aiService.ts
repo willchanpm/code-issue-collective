@@ -1,13 +1,16 @@
-import type { AvatarMood, PhotoAnalysis } from '@/lib/types'
+import type {
+  GeneratedAvatar,
+  PhotoAnalysis,
+} from '@/lib/types'
 import { config, getActiveProvider } from '@/lib/config'
 import {
   analyzePhotoWithGemini,
-  generateAvatarWithGemini,
 } from '@/lib/services/geminiService'
 import {
   analyzePhotoWithOpenAI,
   generateAvatarWithOpenAI,
 } from '@/lib/services/openaiService'
+import type { AvatarMood } from '@/lib/types'
 
 export async function analyzePhoto(
   imageBase64: string,
@@ -22,15 +25,12 @@ export async function analyzePhoto(
   return analyzePhotoWithOpenAI(imageBase64, mimeType)
 }
 
-export async function generateAvatar(
-  description: string,
-  mood: AvatarMood,
-) {
-  const provider = getActiveProvider()
-  const avatar =
-    provider === 'gemini'
-      ? await generateAvatarWithGemini(description, mood)
-      : await generateAvatarWithOpenAI(description, mood)
+// Avatar sprites always use OpenAI DALL-E for consistent 8-bit output.
+export async function generateAvatar(description: string, mood: AvatarMood) {
+  if (!config.openaiApiKey) {
+    throw new Error('OPENAI_API_KEY is required for 8-bit avatar generation')
+  }
 
-  return { avatar, provider }
+  const avatar = await generateAvatarWithOpenAI(description, mood)
+  return { avatar, provider: 'openai' as const }
 }

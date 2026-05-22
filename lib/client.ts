@@ -1,12 +1,13 @@
 import type {
   AnalyzePhotoResponse,
   AudioResponse,
-  AvatarMood,
+  FriendRecord,
   GenerateAvatarResponse,
   PipelineStep,
+  SaveFriendResponse,
   TamagotchaPipelineResult,
 } from '@/lib/types'
-import { AVATAR_MOODS } from '@/lib/services/avatarMoods'
+import { ACTION_SOUND_PROMPTS, AVATAR_MOODS } from '@/lib/services/avatarMoods'
 
 async function parseJson<T>(response: Response): Promise<T> {
   const payload = (await response.json()) as T & { error?: string }
@@ -30,7 +31,7 @@ export async function analyzePhoto(file: File): Promise<AnalyzePhotoResponse> {
 
 export async function generateAvatar(
   description: string,
-  mood: AvatarMood,
+  mood: (typeof AVATAR_MOODS)[number]['mood'],
 ): Promise<GenerateAvatarResponse> {
   const response = await fetch('/api/generate-avatar', {
     method: 'POST',
@@ -51,6 +52,16 @@ export async function generateVoice(text: string): Promise<AudioResponse> {
   return parseJson<AudioResponse>(response)
 }
 
+export async function generateSound(prompt: string): Promise<AudioResponse> {
+  const response = await fetch('/api/generate-sound', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt }),
+  })
+
+  return parseJson<AudioResponse>(response)
+}
+
 export async function generateMusic(mood: string): Promise<AudioResponse> {
   const response = await fetch('/api/generate-music', {
     method: 'POST',
@@ -61,6 +72,24 @@ export async function generateMusic(mood: string): Promise<AudioResponse> {
   return parseJson<AudioResponse>(response)
 }
 
+export async function saveFriend(
+  pipeline: TamagotchaPipelineResult,
+): Promise<SaveFriendResponse> {
+  const response = await fetch('/api/friends', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(pipeline),
+  })
+
+  return parseJson<SaveFriendResponse>(response)
+}
+
+export async function loadFriend(id: string): Promise<FriendRecord> {
+  const response = await fetch(`/api/friends/${id}`)
+  const payload = await parseJson<{ friend: FriendRecord }>(response)
+  return payload.friend
+}
+
 export function audioBase64ToUrl(audio: AudioResponse): string {
   return `data:${audio.mimeType};base64,${audio.audioBase64}`
 }
@@ -69,7 +98,7 @@ export function audioBase64ToUrl(audio: AudioResponse): string {
 export async function processPhotoSerial(
   file: File,
   onStep?: (step: PipelineStep, detail?: string) => void,
-): Promise<TamagotchaPipelineResult> {
+): Promise<{ pipeline: TamagotchaPipelineResult; friend: SaveFriendResponse }> {
   onStep?.('analyzing')
   const { analysis } = await analyzePhoto(file)
 
@@ -82,16 +111,33 @@ export async function processPhotoSerial(
 
   let narrationAudio: AudioResponse | undefined
   let themeMusic: AudioResponse | undefined
+  const actionSounds: TamagotchaPipelineResult['actionSounds'] = {}
 
   try {
     onStep?.('generating-voice')
     narrationAudio = await generateVoice(analysis.narration)
     onStep?.('generating-music')
     themeMusic = await generateMusic('happy')
+
+    onStep?.('generating-sounds')
+    actionSounds.idle = await generateSound(ACTION_SOUND_PROMPTS.idle)
+    actionSounds.pint = await generateSound(ACTION_SOUND_PROMPTS.pint)
+    actionSounds.dance = await generateSound(ACTION_SOUND_PROMPTS.dance)
   } catch {
     // Audio is optional if ElevenLabs is not configured yet.
   }
 
+  const pipeline: TamagotchaPipelineResult = {
+    analysis,
+    avatars,
+    narrationAudio,
+    themeMusic,
+    actionSounds,
+  }
+
+  onStep?.('saving')
+  const friend = await saveFriend(pipeline)
+
   onStep?.('ready')
-  return { analysis, avatars, narrationAudio, themeMusic }
+  return { pipeline, friend }
 }

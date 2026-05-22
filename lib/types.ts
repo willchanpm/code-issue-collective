@@ -1,14 +1,9 @@
 export type AiProvider = 'openai' | 'gemini'
 
-export type AvatarMood =
-  | 'idle'
-  | 'happy'
-  | 'hungry'
-  | 'sleepy'
-  | 'eating'
-  | 'playing'
-  | 'sad'
-  | 'surprised'
+// Demo uses three sprites: default, pint, and dance.
+export type AvatarMood = 'idle' | 'pint' | 'dance'
+
+export type FriendAction = AvatarMood
 
 export interface PhotoAnalysis {
   description: string
@@ -39,11 +34,28 @@ export interface AudioResponse {
   mimeType: string
 }
 
+export interface ActionSounds {
+  idle?: AudioResponse
+  pint?: AudioResponse
+  dance?: AudioResponse
+}
+
 export interface TamagotchaPipelineResult {
   analysis: PhotoAnalysis
   avatars: GeneratedAvatar[]
   narrationAudio?: AudioResponse
   themeMusic?: AudioResponse
+  actionSounds?: ActionSounds
+}
+
+export interface FriendRecord extends TamagotchaPipelineResult {
+  id: string
+  createdAt: string
+}
+
+export interface SaveFriendResponse {
+  id: string
+  sharePath: string
 }
 
 export type PipelineStep =
@@ -51,4 +63,8 @@ export type PipelineStep =
   | 'generating-avatar'
   | 'generating-voice'
   | 'generating-music'
+  | 'generating-sounds'
+  | 'saving'
   | 'ready'
+
+export type FriendViewState = 'idle' | 'pint' | 'dance'

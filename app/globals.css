@@ -210,6 +210,94 @@ button {
   margin-top: 1.5rem;
 }
 
+.share-box {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px dashed #e6d9c7;
+}
+
+.share-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  color: #6d5842;
+}
+
+.share-link {
+  display: block;
+  word-break: break-all;
+  color: #2f2418;
+}
+
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.share-actions button,
+.button-link,
+.friend-actions button {
+  padding: 0.75rem 1.1rem;
+  border: 2px solid #2f2418;
+  border-radius: 999px;
+  background: #8fd3ff;
+  color: #2f2418;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.qr-code {
+  display: block;
+  margin: 1rem auto 0;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 0.5rem;
+}
+
+.friend-preview,
+.friend-page {
+  margin-top: 1.5rem;
+}
+
+.friend-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.friend-stage {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px solid #e6d9c7;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.friend-sprite {
+  width: min(100%, 16rem);
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+
+.friend-feedback {
+  margin: 0;
+  font-weight: 700;
+  color: #6d5842;
+}
+
+.friend-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
 @media (min-width: 768px) {
   .polaroid-stage {
     grid-template-columns: 1fr;
