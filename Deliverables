@@ -1,0 +1,25 @@
+**Deliverables**
+
+1. **Frontend**
+Mobile QR app with 8-bit character, sound, and buttons:
+- Tap / Message
+- Pint Beer
+- Dance
+
+2. **AI API**
+Scan/upload Polaroid, then generate:
+- Image description
+- 8-bit person
+- 8-bit person with pint glass
+- 8-bit person dancing
+- Matching 8-bit sound mood/tempo
+
+3. **Audio**
+Connect ElevenLabs / generated sounds for:
+- Idle
+- Pint Beer
+- Dance
+
+4. **Demo**
+Polaroid + QR code + short pitch showing:
+Scan → character appears → beer button → dance button → sound plays.
