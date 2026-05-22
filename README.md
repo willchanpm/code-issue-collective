@@ -2,7 +2,7 @@
 
 Turn a polaroid photo of your friend into an interactive tamagotchi.
 
-Built as a progressive web app with Vite, React, TypeScript, and a small Express API for AI + audio generation.
+Built with **Next.js** (App Router) so the UI and API run on one server and deploy cleanly to Vercel.
 
 ## Getting started
 
@@ -10,16 +10,16 @@ Built as a progressive web app with Vite, React, TypeScript, and a small Express
 git clone https://github.com/willchanpm/code-issue-collective.git
 cd code-issue-collective
 npm install
-cp .env.example .env
+cp .env.example .env.local
 ```
 
-Add your API keys to `.env`, then start both the frontend and API server:
+Add your API keys to `.env.local`, then start the app:
 
 ```bash
 npm run dev
 ```
 
-Open the local URL Vite prints in your terminal (usually `http://localhost:5173`).
+Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment variables
 
@@ -30,26 +30,32 @@ Open the local URL Vite prints in your terminal (usually `http://localhost:5173`
 | `GEMINI_API_KEY` | Vision + avatar generation when using Gemini |
 | `ELEVENLABS_API_KEY` | Spoken descriptions, pet sounds, and theme music |
 | `ELEVENLABS_VOICE_ID` | Voice used to describe the photo to the person |
-| `PORT` | API server port (default `3001`) |
 
-## API endpoints
+## How the pipeline works
 
-| Endpoint | Purpose |
-| --- | --- |
-| `POST /api/analyze-photo` | Describe the person in the uploaded polaroid |
-| `POST /api/generate-avatars` | Generate 8 mood sprites from the description |
-| `POST /api/process-photo` | Run analysis, avatars, narration, and theme music together |
-| `POST /api/generate-voice` | ElevenLabs text-to-speech |
-| `POST /api/generate-sound` | ElevenLabs short pet reaction sound |
-| `POST /api/generate-music` | ElevenLabs chiptune-style background music |
+When a photo is taken, the frontend runs **one request at a time**:
+
+1. `POST /api/analyze-photo` — describe the person in the polaroid
+2. `POST /api/generate-avatar` — one 8-bit mood sprite per request (8 total)
+3. `POST /api/generate-voice` — ElevenLabs narration
+4. `POST /api/generate-music` — theme music
+
+This keeps each Vercel function short enough to finish within timeout limits.
+
+## Deploy to Vercel
+
+1. Push this repo to GitHub
+2. Import the project in [vercel.com/new](https://vercel.com/new)
+3. Add the environment variables from `.env.example`
+4. Deploy
+
+No separate backend service is required.
 
 ## Scripts
 
-- `npm run dev` — start frontend + API together
-- `npm run dev:client` — frontend only
-- `npm run dev:server` — API only
-- `npm run build` — create a production build
-- `npm run preview` — preview the production build locally
+- `npm run dev` — start Next.js locally
+- `npm run build` — production build
+- `npm run start` — run the production build
 
 ## License
 
