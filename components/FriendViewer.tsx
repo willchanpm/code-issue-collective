@@ -10,6 +10,7 @@ import {
 } from '@/lib/friendUtils'
 import { TamagotchiShell } from '@/components/TamagotchiShell'
 import { SiteNav } from '@/components/SiteNav'
+import { ShareFriendBox } from '@/components/ShareFriendBox'
 
 export function FriendViewer({ id }: { id: string }) {
   const [friend, setFriend] = useState<FriendRecord | null>(null)
@@ -105,6 +106,8 @@ export function FriendViewer({ id }: { id: string }) {
           Dance
         </button>
       </div>
+
+      <ShareFriendBox friendId={friend.id} />
 
       <audio ref={audioRef} hidden />
     </section>

@@ -1,19 +1,17 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import QRCode from 'qrcode'
-import type { FriendViewState } from '@/lib/types'
+import type { FriendRecord, FriendViewState, SaveFriendResponse } from '@/lib/types'
 import {
   audioBase64ToUrl,
   processPhotoSerial,
 } from '@/lib/client'
-import type { FriendRecord, SaveFriendResponse } from '@/lib/types'
 import {
   avatarToDataUrl,
-  buildShareUrl,
   getAvatarForMood,
 } from '@/lib/friendUtils'
 import { PipelineProgress } from '@/components/PipelineProgress'
+import { ShareFriendBox } from '@/components/ShareFriendBox'
 import { TamagotchiShell } from '@/components/TamagotchiShell'
 import {
   applyPipelineProgressUpdate,
@@ -46,23 +44,11 @@ export function PhotoCapture() {
   const [error, setError] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [shareInfo, setShareInfo] = useState<SaveFriendResponse | null>(null)
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
   const [result, setResult] = useState<FriendRecord | null>(null)
 
   useEffect(() => {
     setUseWebcam(prefersWebcamCapture())
   }, [])
-
-  useEffect(() => {
-    if (!shareInfo) {
-      return
-    }
-
-    void QRCode.toDataURL(buildShareUrl(shareInfo.id), {
-      margin: 1,
-      width: 220,
-    }).then(setQrCodeUrl)
-  }, [shareInfo])
 
   // Turn on the live webcam preview once the modal is visible.
   useEffect(() => {
@@ -176,7 +162,6 @@ export function PhotoCapture() {
     setError(null)
     setResult(null)
     setShareInfo(null)
-    setQrCodeUrl(null)
     setPreviewUrl(URL.createObjectURL(file))
 
     try {
@@ -199,14 +184,6 @@ export function PhotoCapture() {
       setError(message)
       setStatus('error')
     }
-  }
-
-  async function copyShareLink() {
-    if (!shareInfo) {
-      return
-    }
-
-    await navigator.clipboard.writeText(buildShareUrl(shareInfo.id))
   }
 
   return (
@@ -298,26 +275,8 @@ export function PhotoCapture() {
             <p className="personality">{result.analysis.personality}</p>
             <blockquote>{result.analysis.narration}</blockquote>
 
-            <div className="share-box">
-              <p className="share-label">Friend link for the QR code:</p>
-              <a className="share-link" href={shareInfo.sharePath}>
-                {buildShareUrl(shareInfo.id)}
-              </a>
-              <div className="share-actions">
-                <button type="button" onClick={() => void copyShareLink()}>
-                  Copy link
-                </button>
-                <a className="button-link" href={shareInfo.sharePath}>
-                  Open friend page
-                </a>
-              </div>
-              {qrCodeUrl && (
-                <img
-                  className="qr-code"
-                  src={qrCodeUrl}
-                  alt="QR code linking to the friend page"
-                />
-              )}
+            <div className="share-box-wrap">
+              {shareInfo && <ShareFriendBox friendId={shareInfo.id} />}
               <div className="share-actions">
                 <a className="button-link" href="/friends">
                   See all my friends

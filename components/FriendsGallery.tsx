@@ -6,6 +6,7 @@ import { loadAllFriends } from '@/lib/client'
 import type { FriendSummary } from '@/lib/types'
 import { avatarToDataUrl } from '@/lib/friendUtils'
 import { SiteNav } from '@/components/SiteNav'
+import { ShareFriendBox } from '@/components/ShareFriendBox'
 
 export function FriendsGallery() {
   const [friends, setFriends] = useState<FriendSummary[]>([])
@@ -56,18 +57,21 @@ export function FriendsGallery() {
         <ul className="friends-grid">
           {friends.map((friend) => (
             <li key={friend.id}>
-              <Link className="friend-card" href={`/p/${friend.id}`}>
-                <div className="friend-card-screen">
-                  <img
-                    src={avatarToDataUrl(friend.idleAvatar)}
-                    alt={`${friend.name} idle avatar`}
-                  />
-                </div>
-                <div className="friend-card-meta">
-                  <strong>{friend.name}</strong>
-                  <span>{formatCreatedAt(friend.createdAt)}</span>
-                </div>
-              </Link>
+              <article className="friend-card">
+                <Link className="friend-card-link" href={`/p/${friend.id}`}>
+                  <div className="friend-card-screen">
+                    <img
+                      src={avatarToDataUrl(friend.idleAvatar)}
+                      alt={`${friend.name} idle avatar`}
+                    />
+                  </div>
+                  <div className="friend-card-meta">
+                    <strong>{friend.name}</strong>
+                    <span>{formatCreatedAt(friend.createdAt)}</span>
+                  </div>
+                </Link>
+                <ShareFriendBox friendId={friend.id} compact />
+              </article>
             </li>
           ))}
         </ul>
